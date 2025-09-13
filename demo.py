@@ -1,12 +1,7 @@
 import torch, pygame, numpy
+import utils
 
-pygame.init()
-screen = pygame.display.set_mode((1280, 720))
-clock = pygame.time.Clock()
-running = True
-paused = True
-
-def show_matrix(matrix, cell_size=10):
+def draw_matrix(matrix, screen, cell_size=10):
     for row in range(len(matrix)):
         for col in range(len(matrix[row])):
             left = col * cell_size
@@ -14,25 +9,30 @@ def show_matrix(matrix, cell_size=10):
             value = round(matrix[row][col] * 255)  # the colour of the cell
             pygame.draw.rect(screen, (value, value, value), (left, top, cell_size, cell_size))
 
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:  # user closed window
-            running = False
+def display_matrix(matrix: torch.Tensor):
+    pygame.init()
+    screen = pygame.display.set_mode((1280, 720))
+    clock = pygame.time.Clock()
+    running = True
+    paused = True
 
-    screen.fill("black")
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:  # user closed window
+                running = False
 
-    # RENDER YOUR GAME HERE
+        screen.fill("black")
 
-    show_matrix(numpy.array([
-        [0, 0, 0, 0.8],
-        [0, 1, 0.5, 0],
-        [1, 0.7, 1, 1],
-        [0.2, 0.3, 0.4, 0.5]
-    ]))
+        # RENDER YOUR GAME HERE
 
-    # flip() the display to put your work on screen
-    pygame.display.flip()
+        draw_matrix(matrix.tolist(), screen)
 
-    clock.tick(60)  # limits FPS to 60
+        # flip() the display to put your work on screen
+        pygame.display.flip()
 
-pygame.quit()
+        clock.tick(60)  # limits FPS to 60
+
+    pygame.quit()
+
+
+
