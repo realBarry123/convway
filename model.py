@@ -32,6 +32,7 @@ class ConvwayNet(torch.nn.Module):
         # (B, T=1, H, W)
         return x
 
+# Test code does not run on import
 if __name__ == "__main__":
     model = ConvwayNet()
     print(model(torch.zeros((B, T, 69, 420))).shape)
