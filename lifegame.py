@@ -20,7 +20,7 @@ def _print_matrix(universe):
                 print(".", end="")
         print("\n")
 
-def update(universe):
+def update_game(universe):
     new_universe = copy.deepcopy(universe)
     for row in range(len(universe)):
         for col in range(len(universe[row])):
