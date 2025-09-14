@@ -50,15 +50,16 @@ def play_game(model, cell_size=10):
                 if event.key == pygame.K_SPACE:  # user pressed SPACE
                     paused = not paused
                 elif event.key == pygame.K_RIGHT:
-                    #matrix = update_function(matrix)
-                    pass
+                    y_pred = model(state)
+                    state = torch.cat((state, y_pred), dim=1)[:, -4:, :, :].detach()
 
         screen.fill("black")
 
         draw_matrix(state[-1][0].tolist(), screen, cell_size)
 
-        y_pred = model(state)
-        state = torch.cat((state, y_pred), dim=1)[:, -4:, :, :].detach()
+        if not paused:
+            y_pred = model(state)
+            state = torch.cat((state, y_pred), dim=1)[:, -4:, :, :].detach()
         
         pygame.display.flip()
         clock.tick(10)
