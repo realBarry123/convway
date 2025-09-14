@@ -7,13 +7,15 @@ import utils
 
 B = 1
 T = 4
+CHAIN_DEPTH = 3
 H = 1024  # training height
 W = 1024  # training width
+BETA = 0.6
 
 SAVE_PATH = "models/model_1.pt"
 
 NUM_EPOCHS = 10
-EPOCH_SIZE = 8  # size of epoch
+EPOCH_SIZE = 1  # size of epoch
 LR = 0.001
 DEVICE = "cpu"
 
@@ -45,25 +47,32 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
         x_smushed = utils.downscale(torch.mean(x, dim=1, keepdim=False), T)  # (B, 1, H/4, W/4)
         x_binary = torch.heaviside(x_smushed - 0.5, values=torch.tensor([0.]))  # (B, H/4, W/4)
 
-        # Conversion
-        y_binary = torch.stack([update_game(universe) for universe in x_binary], dim=0)
-
-        # Upscale y
-        y_binary = torch.unsqueeze(y_binary, dim=1)  # (B, 1, H/4, W/4)
-        y = utils.upscale(y_binary, T)  # (B, 1, H, W)
+        for frame in range(CHAIN_DEPTH):
+            # Conversion
+            x_binary = torch.stack([update_game(universe) for universe in x_binary], dim=0)
         
-        # Calculate loss
-        y_pred = model(x)
-        loss = mse_loss(y, y_pred) + 0.1 * mse_loss(y[0][0], state[0][-1])
+        # Upscale y
+        y_binary = torch.unsqueeze(x_binary, dim=1)  # (B, 1, H/4, W/4)
+        y = utils.upscale(y_binary, T)  # (B, 1, H, W)
+
+        smoothness_loss = torch.tensor(0.0, device=x.device)
+        
+        for frame in range(T * CHAIN_DEPTH):
+            # Forward
+            x = model(state)
+
+            smoothness_loss += mse_loss(x, state[:, -1:])
+
+            # Add to and trim state
+            state = torch.cat((state, x), dim=1)[:, -4:, :, :].detach()
+
+        loss = mse_loss(x, y) + BETA * smoothness_loss
         total_loss += loss.item()
         
         # The holy trinity
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
-
-        # Add to and trim state
-        state = torch.cat((state, y_pred), dim=1)[:, -4:, :, :].detach()
     
     print(f"Train loss (average): {total_loss/EPOCH_SIZE}")
     

@@ -12,7 +12,7 @@ class ConvwayNet(torch.nn.Module):
         self.conv1 = torch.nn.Conv2d(
             in_channels=4, 
             out_channels=1, 
-            kernel_size=(4 * 3, 4 * 3), 
+            kernel_size=(T * 3, T * 3), 
             padding="same"
         )
 
@@ -20,7 +20,7 @@ class ConvwayNet(torch.nn.Module):
         self.conv2 = torch.nn.Conv2d(
             in_channels=1, 
             out_channels=1, 
-            kernel_size=(4 * 3, 4 * 3), 
+            kernel_size=(T * 3, T * 3), 
             padding="same"
         )
 

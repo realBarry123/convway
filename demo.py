@@ -72,4 +72,4 @@ if __name__ == "__main__":
     model.load_state_dict(state_dict)
     model.eval()
 
-    play_game(model)
+    play_game(model, cell_size=3)
