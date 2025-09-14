@@ -24,12 +24,17 @@ class ConvwayNet(torch.nn.Module):
             padding="same"
         )
 
-    def forward(self, x):
-        # (B, T=4, H, W)
-        x = self.conv1(x)
-        # (B, T=1, H, W)
-        x = self.conv2(x)
-        # (B, T=1, H, W)
+        # Activations
+        self.leaky_relu = torch.nn.LeakyReLU()
+        self.sigmoid = torch.nn.Sigmoid()
+
+    def forward(self, x):  # (B, T=4, H, W)
+        x = self.conv1(x)  # (B, T=1, H, W)
+        x = self.leaky_relu(x)
+
+        x = self.conv2(x)  # (B, T=1, H, W)
+        x = self.sigmoid(x)
+
         return x
 
 # Test code does not run on import
