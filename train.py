@@ -12,8 +12,8 @@ W = 1024  # training width
 
 SAVE_PATH = "models/model_1.pt"
 
-NUM_EPOCHS = 1
-EPOCH_SIZE = 64  # arbitrary size of epoch
+NUM_EPOCHS = 10
+EPOCH_SIZE = 16  # size of epoch
 LR = 0.001
 DEVICE = "cpu"
 
@@ -36,12 +36,11 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
     model.train()
 
     seed_state = torch.randint(0, 2, (B, 1, int(H/4), int(W/4))).float()
-
     state = utils.upscale(seed_state, 4).repeat(1, T, 1, 1)
 
-    for step in tqdm(range(EPOCH_SIZE)):
+    for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
         # Downscale x
-        x = state[:, -T:, :, :]  # last 4 timesteps
+        x = state.clone()
         x_smushed = utils.downscale(torch.mean(x, dim=1, keepdim=False), T)  # (B, 1, H/4, W/4)
         x_binary = torch.heaviside(x_smushed - 0.5, values=torch.tensor([0.]))  # (B, H/4, W/4)
 
@@ -60,6 +59,9 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
         optimizer.zero_grad()
         loss.backward()
         optimizer.step()
+
+        # Add to and trim state
+        state = torch.cat((state, y_pred), dim=1)[:, -4:, :, :].detach()
     
     torch.save([model.state_dict(), epoch], SAVE_PATH)
         

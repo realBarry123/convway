@@ -21,7 +21,7 @@ def _print_matrix(universe):
         print("\n")
 
 def update_game(universe):
-    new_universe = copy.deepcopy(universe)
+    new_universe = universe.clone().detach()
     for row in range(len(universe)):
         for col in range(len(universe[row])):
             neighbours = _count_neighbours(universe, row, col)
