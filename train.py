@@ -1,4 +1,4 @@
-import torch
+import torch, random, time
 from tqdm import tqdm
 from model import ConvwayNet
 from lifegame import update_game
@@ -10,7 +10,7 @@ T = 4
 CHAIN_DEPTH = 3
 H = 1024  # training height
 W = 1024  # training width
-BETA = 0.6
+BETA = 0.1
 
 SAVE_PATH = "models/model_1.pt"
 
@@ -66,7 +66,7 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
             # Add to and trim state
             state = torch.cat((state, x), dim=1)[:, -4:, :, :].detach()
 
-        loss = mse_loss(x, y) + BETA * smoothness_loss
+        loss = mse_loss(x, y) + BETA * smoothness_loss / CHAIN_DEPTH
         total_loss += loss.item()
         
         # The holy trinity
