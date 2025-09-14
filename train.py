@@ -13,7 +13,7 @@ W = 1024  # training width
 SAVE_PATH = "models/model_1.pt"
 
 NUM_EPOCHS = 10
-EPOCH_SIZE = 16  # size of epoch
+EPOCH_SIZE = 8  # size of epoch
 LR = 0.001
 DEVICE = "cpu"
 
@@ -32,8 +32,9 @@ optimizer = torch.optim.Adam(params=model.parameters(), lr=LR, weight_decay=0.01
 mse_loss = torch.nn.MSELoss()
 
 for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
-
     model.train()
+
+    total_loss = 0
 
     seed_state = torch.randint(0, 2, (B, 1, int(H/4), int(W/4))).float()
     state = utils.upscale(seed_state, 4).repeat(1, T, 1, 1)
@@ -53,7 +54,8 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
         
         # Calculate loss
         y_pred = model(x)
-        loss = mse_loss(y, y_pred)
+        loss = mse_loss(y, y_pred) + 0.1 * mse_loss(y[0][0], state[0][-1])
+        total_loss += loss.item()
         
         # The holy trinity
         optimizer.zero_grad()
@@ -63,5 +65,6 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
         # Add to and trim state
         state = torch.cat((state, y_pred), dim=1)[:, -4:, :, :].detach()
     
+    print(f"Train loss (average): {total_loss/EPOCH_SIZE}")
+    
     torch.save([model.state_dict(), epoch], SAVE_PATH)
-        
