@@ -7,14 +7,14 @@ import utils
 
 B = 1
 T = 4
-CHAIN_DEPTH = 3
+CHAIN_DEPTH = 10
 H = 1024  # training height
 W = 1024  # training width
-BETA = 0.1
+BETA = 0.4
 
 SAVE_PATH = "models/model_1.pt"
 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 5
 EPOCH_SIZE = 1  # size of epoch
 LR = 0.001
 DEVICE = "cpu"
