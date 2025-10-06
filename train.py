@@ -1,4 +1,4 @@
-import torch, random, time
+import torch, random, time, wandb
 from tqdm import tqdm
 from model import ConvwayNet
 from lifegame import update_game
@@ -7,17 +7,32 @@ import utils
 
 B = 1
 T = 4
-CHAIN_DEPTH = 10
+CHAIN_DEPTH = 4
 H = 1024  # training height
 W = 1024  # training width
 BETA = 0.4
 
-SAVE_PATH = "models/model_1.pt"
+SAVE_PATH = "models/model_2.pt"
 
-NUM_EPOCHS = 5
+NUM_EPOCHS = 4
 EPOCH_SIZE = 1  # size of epoch
 LR = 0.001
 DEVICE = "cpu"
+
+DO_WANDB = False
+
+if DO_WANDB: 
+    wandb_run = wandb.init(
+        project="convway",
+        entity="barry-and-only-barry",
+        config={
+            "lr": 0.001,
+            "epochs": 10,
+        },
+        id="lilac-rain-2",
+        resume=True
+    )
+
 
 start_epoch = 0
 
@@ -68,6 +83,8 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
 
         loss = mse_loss(x, y) + BETA * smoothness_loss / CHAIN_DEPTH
         total_loss += loss.item()
+        if DO_WANDB: 
+            wandb_run.log({"loss": loss.item()})
         
         # The holy trinity
         optimizer.zero_grad()
