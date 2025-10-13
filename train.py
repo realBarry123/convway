@@ -7,14 +7,14 @@ import utils
 
 B = 1
 T = 4
-CHAIN_DEPTH = 4
+CHAIN_DEPTH = 2
 H = 1024  # training height
 W = 1024  # training width
-BETA = 0.4
+T_SMOOTH_WEIGHT = 0.1
 
 SAVE_PATH = "models/model_2.pt"
 
-NUM_EPOCHS = 4
+NUM_EPOCHS = 8
 EPOCH_SIZE = 1  # size of epoch
 LR = 0.001
 DEVICE = "cpu"
@@ -53,7 +53,14 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
 
     total_loss = 0
 
-    seed_state = torch.randint(0, 2, (B, 1, int(H/4), int(W/4))).float()
+    # seed_state = torch.randint(0, 2, (B, 1, int(H/4), int(W/4))).float()
+    probability = random.random()
+    seed_state = torch.bernoulli(
+        input=torch.full(
+            size=(B, 1, int(H/4), int(W/4)),
+            fill_value=probability
+        )
+    )
     state = utils.upscale(seed_state, 4).repeat(1, T, 1, 1)
 
     for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
@@ -70,18 +77,18 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
         y_binary = torch.unsqueeze(x_binary, dim=1)  # (B, 1, H/4, W/4)
         y = utils.upscale(y_binary, T)  # (B, 1, H, W)
 
-        smoothness_loss = torch.tensor(0.0, device=x.device)
+        t_smooth_loss = torch.tensor(0.0, device=x.device)
         
         for frame in range(T * CHAIN_DEPTH):
             # Forward
             x = model(state)
 
-            smoothness_loss += mse_loss(x, state[:, -1:])
+            t_smooth_loss += mse_loss(x, state[:, -1:])
 
             # Add to and trim state
             state = torch.cat((state, x), dim=1)[:, -4:, :, :].detach()
 
-        loss = mse_loss(x, y) + BETA * smoothness_loss / CHAIN_DEPTH
+        loss = mse_loss(x, y) + T_SMOOTH_WEIGHT * t_smooth_loss / CHAIN_DEPTH
         total_loss += loss.item()
         if DO_WANDB: 
             wandb_run.log({"loss": loss.item()})
