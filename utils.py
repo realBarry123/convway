@@ -1,7 +1,6 @@
 import torch, random
 import torch.nn.functional as F
 
-import utils
 from lifegame import update_game
 
 # Upscale spatial dimensions in a blurry way
@@ -32,6 +31,6 @@ def spacetime_block(steps, height, width, batch_size=1):
         new_state = new_state.unsqueeze(0).unsqueeze(0) # (B=1, 1, H/4, W/4)
         states = torch.cat((states, new_state), dim=1)
 
-    states = utils.upscale(states, 4)
+    states = upscale(states, 4)
     states = states.permute(1, 0, 2, 3) # spacetime block (B=1, (steps+T+1) * 4 , H, W)
     return states
