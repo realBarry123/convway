@@ -2,8 +2,8 @@ import copy
 def _count_neighbours(universe, row, col):
     neighbours = 0
     
-    for drow in [-1, 0, 1]:
-        for dcol in [-1, 0, 1]:
+    for drow in (-1, 0, 1):
+        for dcol in (-1, 0, 1):
             if drow == 0 and dcol == 0:
                 continue
             if 0 <= row+drow < len(universe) and 0 <= col+dcol < len(universe[0]):

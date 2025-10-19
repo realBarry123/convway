@@ -9,7 +9,7 @@ class ConvwayNet(torch.nn.Module):
         super().__init__()
         
         # Downscaling (T) layer 
-        self.conv1 = torch.nn.Conv2d(
+        self.smush_t = torch.nn.Conv2d(
             in_channels=4, 
             out_channels=1, 
             kernel_size=(T * 3, T * 3), 
@@ -17,7 +17,7 @@ class ConvwayNet(torch.nn.Module):
         )
 
         # Conv layer
-        self.conv2 = torch.nn.Conv2d(
+        self.conv = torch.nn.Conv2d(
             in_channels=1, 
             out_channels=1, 
             kernel_size=(T * 3, T * 3), 
@@ -29,10 +29,10 @@ class ConvwayNet(torch.nn.Module):
         self.sigmoid = torch.nn.Sigmoid()
 
     def forward(self, x):  # (B, T=4, H, W)
-        x = self.conv1(x)  # (B, T=1, H, W)
+        x = self.smush_t(x)  # (B, T=1, H, W)
         x = self.leaky_relu(x)
 
-        x = self.conv2(x)  # (B, T=1, H, W)
+        x = self.conv(x)  # (B, T=1, H, W)
         x = self.sigmoid(x)
 
         return x
