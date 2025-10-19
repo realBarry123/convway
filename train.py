@@ -15,8 +15,8 @@ T_SMOOTH_WEIGHT = 0.1
 
 SAVE_PATH = "models/model_2.pt"
 
-NUM_EPOCHS = 8
-SIM_STEPS = 1  # how many steps you want to simulate
+NUM_EPOCHS = 4
+SIM_STEPS = 2  # how many steps you want to simulate
 LR = 0.001
 DEVICE = "cpu"
 
@@ -57,7 +57,7 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
     total_loss = 0
 
     # BUILD SPACETIME BLOCK
-    probability = random.random()
+    probability = 0.5 # random.random()
     states = torch.bernoulli(
         input=torch.full(
             size=(B, 1, int(H/4), int(W/4)),
@@ -74,16 +74,22 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
     states = utils.upscale(states, 4)
     states = states.squeeze(1)
     states = states.permute(1, 0, 2, 3) # spacetime block (B=1, (SIM_STEPS+T+1) * 4 , H, W)
-    print(states.shape)
+    print(f"Created spacetime block: {states.shape}")
     
-    EPOCH_SIZE = states.shape[0] - 1
-    print(f"Training for {EPOCH_SIZE} epochs...")
-    exit()
+    EPOCH_SIZE = states.shape[0] - (T + 1) + 1
+    print(f"Training for {EPOCH_SIZE} steps...")
+    # exit()
 
     for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
+        x = states[step:step+T].permute(1, 0, 2, 3)
+        target = states[step+T]
+        y = model(x).squeeze(1)
+        loss = mse_loss(y, target)
         
         if DO_WANDB: 
             wandb_run.log({"loss": loss.item()})
+
+        total_loss += loss.item()
         
         # The holy trinity
         optimizer.zero_grad()
