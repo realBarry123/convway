@@ -13,14 +13,14 @@ H = 1024  # training height
 W = 1024  # training width
 T_SMOOTH_WEIGHT = 0.1
 
-SAVE_PATH = "models/model_2.pt"
+SAVE_PATH = "models/interpolate_0.pt"
 
 NUM_EPOCHS = 4
 SIM_STEPS = 2  # how many steps you want to simulate
 LR = 0.001
 DEVICE = "cpu"
 
-SAVING = False
+SAVING = True
 DO_WANDB = False
 
 if DO_WANDB: 
@@ -70,9 +70,7 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
         new_state = new_state.unsqueeze(0).unsqueeze(0) # (B=1, 1, H/4, W/4)
         states = torch.cat((states, new_state), dim=1)
 
-    states = states.unsqueeze(1)
     states = utils.upscale(states, 4)
-    states = states.squeeze(1)
     states = states.permute(1, 0, 2, 3) # spacetime block (B=1, (SIM_STEPS+T+1) * 4 , H, W)
     print(f"Created spacetime block: {states.shape}")
     

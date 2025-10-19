@@ -2,7 +2,7 @@ import torch, pygame, numpy
 from model import ConvwayNet
 import utils
 
-LOAD_PATH = "models/model_2.pt"
+LOAD_PATH = "models/interpolate_0.pt"
 
 def draw_matrix(matrix, screen, cell_size=10):
     for row in range(len(matrix)):
@@ -40,7 +40,7 @@ def play_game(model, cell_size=10):
     paused = True
 
     seed_state = torch.randint(0, 2, (1, 1, int(512/4), int(512/4))).float() #  (B=1, T=1, H, W)
-    state = utils.upscale(seed_state, 4).repeat(1, 4, 1, 1)  # (B=1, T=4, H, W)
+    state = utils.upscale(seed_state, 4)  # (B=1, T=4, H, W)
 
     while running:
         for event in pygame.event.get():
