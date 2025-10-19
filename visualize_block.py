@@ -11,7 +11,7 @@ i = 0
 
 SIM_STEPS = 32
 
-block = spacetime_block(steps=SIM_STEPS, height=512, width=512, batch_size=1)
+block = spacetime_block(steps=SIM_STEPS, factor=4, height=512, width=512, batch_size=1)
 
 while running and i <= SIM_STEPS * 4:
     for event in pygame.event.get():

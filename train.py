@@ -56,7 +56,7 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
     total_loss = 0
 
     # BUILD SPACETIME BLOCK
-    states = utils.spacetime_block(steps=SIM_STEPS, height=H, width=W, batch_size=B)
+    states = utils.spacetime_block(steps=SIM_STEPS, factor=T, height=H, width=W, batch_size=B)
     print(f"Created spacetime block: {states.shape}")
     
     EPOCH_SIZE = states.shape[0] - (T + 1) + 1
