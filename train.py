@@ -12,10 +12,10 @@ H = 1024  # training height
 W = 1024  # training width
 T_SMOOTH_WEIGHT = 0.1
 
-SAVE_PATH = "models/interpolate_2.pt"
+SAVE_PATH = "models/interpolate_32_steps_4.pt"
 
-NUM_EPOCHS = 2
-SIM_STEPS = 16  # how many steps to simulate per epoch
+NUM_EPOCHS = 4
+SIM_STEPS = 32  # how many steps to simulate per epoch
 LR = 0.001
 DEVICE = "cpu"
 

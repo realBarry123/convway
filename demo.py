@@ -2,7 +2,7 @@ import torch, pygame, numpy
 from model import ConvwayNet
 import utils
 
-LOAD_PATH = "models/interpolate_0.pt"
+LOAD_PATH = "models/interpolate_32_steps_4.pt"
 
 def draw_matrix(matrix, screen, cell_size=10):
     for row in range(len(matrix)):
