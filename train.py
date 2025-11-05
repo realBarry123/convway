@@ -7,14 +7,14 @@ import utils
 B = 1
 assert B == 1, "batch size bigger than 1 has not been implemented yet"
 T = 4
-CHAIN_DEPTH = 2
-H = 1024  # training height
-W = 1024  # training width
+CHAIN_DEPTH = 16
+H = 256  # training height
+W = 256  # training width
 T_SMOOTH_WEIGHT = 0.1
 
-SAVE_PATH = "models/interpolate_32_steps_4.pt"
+SAVE_PATH = "models/residual_2.pt"
 
-NUM_EPOCHS = 4
+NUM_EPOCHS = 16
 SIM_STEPS = 32  # how many steps to simulate per epoch
 LR = 0.001
 DEVICE = "cpu"
@@ -68,6 +68,7 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
         target = states[step+T]
         y = model(x).squeeze(1)
         loss = mse_loss(y, target)
+        # residual_loss = torch.mean(abs(y - x))
         
         if DO_WANDB: 
             wandb_run.log({"loss": loss.item()})

@@ -30,12 +30,13 @@ class ConvwayNet(torch.nn.Module):
 
     def forward(self, x):  # (B, T=4, H, W)
         x = self.smush_t(x)  # (B, T=1, H, W)
-        x = self.leaky_relu(x)
+        fx = self.leaky_relu(x)
 
-        x = self.conv(x)  # (B, T=1, H, W)
-        x = self.sigmoid(x)
-
-        return x
+        fx = self.conv(fx)  # (B, T=1, H, W)
+        # fx = self.leaky_relu(fx)
+        fx = self.sigmoid(fx)
+        
+        return x + fx
 
 # Test code does not run on import
 if __name__ == "__main__":
