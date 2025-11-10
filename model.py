@@ -34,9 +34,9 @@ class ConvwayNet(torch.nn.Module):
 
         fx = self.conv(fx)  # (B, T=1, H, W)
         # fx = self.leaky_relu(fx)
-        fx = self.sigmoid(fx)
+        x = self.sigmoid(x + fx)
         
-        return x + fx
+        return x
 
 # Test code does not run on import
 if __name__ == "__main__":
