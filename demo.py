@@ -2,7 +2,7 @@ import torch, pygame, numpy
 from model import ConvwayNet
 import utils
 
-LOAD_PATH = "models/residual.pt"
+LOAD_PATH = "models/deep.pt"
 
 def draw_matrix(matrix, screen, cell_size=10):
     for row in range(len(matrix)):

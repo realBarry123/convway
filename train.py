@@ -11,7 +11,7 @@ CHAIN_DEPTH = 16
 H = 512  # training height
 W = 512  # training width
 
-SAVE_PATH = "models/residual.pt"
+SAVE_PATH = "models/deep.pt"
 
 NUM_EPOCHS = 32
 SIM_STEPS = 32  # how many steps to simulate per epoch
