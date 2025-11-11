@@ -1,5 +1,6 @@
 import torch, random
 import torch.nn.functional as F
+from tqdm import tqdm
 
 from lifegame import update_game
 
@@ -26,7 +27,7 @@ def spacetime_block(steps, factor, height, width, batch_size=1):
         )
     )
     
-    for i in range(steps): 
+    for i in tqdm(range(steps), desc=f"Generating Data"): 
         new_state = update_game(states[0][i])
         new_state = new_state.unsqueeze(0).unsqueeze(0) # (B=1, 1, H/4, W/4)
         states = torch.cat((states, new_state), dim=1)

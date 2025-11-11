@@ -8,13 +8,12 @@ B = 1
 assert B == 1, "batch size bigger than 1 has not been implemented yet"
 T = 4
 CHAIN_DEPTH = 16
-H = 256  # training height
-W = 256  # training width
-T_SMOOTH_WEIGHT = 0.1
+H = 512  # training height
+W = 512  # training width
 
-SAVE_PATH = "models/residual_2.pt"
+SAVE_PATH = "models/residual.pt"
 
-NUM_EPOCHS = 16
+NUM_EPOCHS = 32
 SIM_STEPS = 32  # how many steps to simulate per epoch
 LR = 0.001
 DEVICE = "cpu"
@@ -55,13 +54,11 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
 
     total_loss = 0
 
-    # BUILD SPACETIME BLOCK
     states = utils.spacetime_block(steps=SIM_STEPS, factor=T, height=H, width=W, batch_size=B)
-    print(f"Created spacetime block: {states.shape}")
+    # print(f"Created spacetime block: {states.shape}")
     
     EPOCH_SIZE = states.shape[0] - (T + 1) + 1
-    print(f"Training for {EPOCH_SIZE} steps...")
-    # exit()
+    # print(f"Training for {EPOCH_SIZE} steps...")
 
     for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
         x = states[step:step+T].permute(1, 0, 2, 3)
