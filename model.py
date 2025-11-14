@@ -1,10 +1,10 @@
 import torch
 from torch import nn
+from constants import *
 
 B = 32
-T = 4
 
-def create_conv_stack(channels, kernel_size=T*3, do_relu=True):
+def create_conv_stack(channels, kernel_size=SCALE*3, do_relu=True):
     layers = []
     for i in range(len(channels) - 1):
         layers.append(nn.Conv2d(
@@ -35,7 +35,7 @@ class ConvwayNet(torch.nn.Module):
         self.smush_t = torch.nn.Conv2d(
             in_channels=4, 
             out_channels=1, 
-            kernel_size=(T * 3, T * 3), 
+            kernel_size=(SCALE * 3, SCALE * 3), 
             padding="same"
         )
 
@@ -58,4 +58,4 @@ class ConvwayNet(torch.nn.Module):
 # Test code does not run on import
 if __name__ == "__main__":
     model = ConvwayNet()
-    print(model(torch.zeros((B, T, 69, 420))).shape)
+    print(model(torch.zeros((B, SCALE, 69, 420))).shape)

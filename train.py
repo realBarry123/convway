@@ -3,10 +3,10 @@ from tqdm import tqdm
 from model import ConvwayNet
 from demo import display_matrix
 import utils
+from constants import *
 
 B = 1
 assert B == 1, "batch size bigger than 1 has not been implemented yet"
-T = 4
 CHAIN_DEPTH = 16
 H = 512  # training height
 W = 512  # training width
@@ -52,15 +52,15 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
 
     total_loss = 0
 
-    states = utils.spacetime_block(steps=SIM_STEPS, factor=T, height=H, width=W, batch_size=B)
+    states = utils.spacetime_block(steps=SIM_STEPS, factor=SCALE, height=H, width=W, batch_size=B)
     # print(f"Created spacetime block: {states.shape}")
     
-    EPOCH_SIZE = states.shape[0] - (T + 1) + 1
+    EPOCH_SIZE = states.shape[0] - (SCALE + 1) + 1
     # print(f"Training for {EPOCH_SIZE} steps...")
 
     for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
-        x = states[step:step+T].permute(1, 0, 2, 3)
-        target = states[step+T]
+        x = states[step: step + SCALE].permute(1, 0, 2, 3)
+        target = states[step + SCALE]
         y = model(x).squeeze(1)
         loss = mse_loss(y, target)
         # residual_loss = torch.mean(abs(y - x))
