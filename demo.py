@@ -2,8 +2,6 @@ import torch, pygame, numpy
 from model import ConvwayNet
 import utils
 
-LOAD_PATH = "models/deep.pt"
-
 def draw_matrix(matrix, screen, cell_size=10):
     for row in range(len(matrix)):
         for col in range(len(matrix[row])):
@@ -67,8 +65,9 @@ def play_game(model, cell_size=10):
     pygame.quit()
 
 if __name__ == "__main__":
-    model = ConvwayNet()
-    state_dict, epoch = torch.load(LOAD_PATH)
+    LOAD_PATH = f"models/{input("Enter model name: ")}.pt"
+    state_dict, epoch, configs = torch.load(LOAD_PATH)
+    model = ConvwayNet(**configs)
     model.load_state_dict(state_dict)
     model.eval()
 
