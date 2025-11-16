@@ -11,7 +11,7 @@ CHAIN_DEPTH = 16
 H = 512  # training height
 W = 512  # training width
 
-SAVE_PATH = "models/mean_res.pt"
+SAVE_PATH = "models/mean_141_relu.pt"
 
 NUM_EPOCHS = 64
 SIM_STEPS = 32  # how many steps to simulate per epoch
@@ -42,7 +42,7 @@ try:
     model.load_state_dict(state_dict)
     start_epoch = epoch + 1
 except FileNotFoundError:
-    model = ConvwayNet(squeeze_mode="mean", conv_channels=(1, 4, 1), do_relu=True).to(DEVICE)
+    model = ConvwayNet(x_smush_mode="last", r_smush_mode="mean", conv_channels=(1, 4, 1), do_relu=True).to(DEVICE)
 
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LR, weight_decay=0.01)
 mse_loss = torch.nn.MSELoss()
