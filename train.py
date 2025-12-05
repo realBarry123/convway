@@ -7,18 +7,17 @@ from constants import *
 
 B = 1
 assert B == 1, "batch size bigger than 1 has not been implemented yet"
-CHAIN_DEPTH = 16
 H = 512  # training height
 W = 512  # training width
 
-SAVE_PATH = "models/mean_141_relu.pt"
+SAVE_PATH = "models/te.pt"
 
-NUM_EPOCHS = 64
+NUM_EPOCHS = 1
 SIM_STEPS = 32  # how many steps to simulate per epoch
 LR = 0.001
 DEVICE = "cpu"
 
-SAVING = True
+SAVING = False
 DO_WANDB = False
 
 if DO_WANDB: 
@@ -47,35 +46,42 @@ except FileNotFoundError:
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LR, weight_decay=0.01)
 mse_loss = torch.nn.MSELoss()
 
-for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
-    model.train()
+def save(model: torch.nn.Module, epoch: int, save_path: str):
+    torch.save([model.state_dict(), model.configs, epoch], save_path)
 
-    total_loss = 0
+def train(model: torch.nn.Module, save_path: str = None, start_epoch: int = 0):
 
-    states = utils.spacetime_block(steps=SIM_STEPS, factor=SCALE, height=H, width=W, batch_size=B)
-    # print(f"Created spacetime block: {states.shape}")
-    
-    EPOCH_SIZE = states.shape[0] - (SCALE + 1) + 1
-    # print(f"Training for {EPOCH_SIZE} steps...")
+    for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
+        model.train()
 
-    for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
-        x = states[step: step + SCALE].permute(1, 0, 2, 3)
-        target = states[step + SCALE]
-        y = model(x).squeeze(1)
-        loss = mse_loss(y, target)
-        # residual_loss = torch.mean(abs(y - x))
+        total_loss = 0
+
+        states = utils.spacetime_block(steps=SIM_STEPS, factor=SCALE, height=H, width=W, batch_size=B)
+        # print(f"Created spacetime block: {states.shape}")
         
-        if DO_WANDB: 
-            wandb_run.log({"loss": loss.item()})
+        EPOCH_SIZE = states.shape[0] - (SCALE + 1) + 1
+        # print(f"Training for {EPOCH_SIZE} steps...")
 
-        total_loss += loss.item()
+        for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
+            x = states[step: step + SCALE].permute(1, 0, 2, 3)
+            target = states[step + SCALE]
+            y = model(x).squeeze(1)
+            loss = mse_loss(y, target)
+            # residual_loss = torch.mean(abs(y - x))
+            
+            if DO_WANDB: 
+                wandb_run.log({"loss": loss.item()})
+
+            total_loss += loss.item()
+            
+            # The holy trinity
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
         
-        # The holy trinity
-        optimizer.zero_grad()
-        loss.backward()
-        optimizer.step()
-    
-    print(f"Train loss (average): {total_loss/EPOCH_SIZE}")
-    
-    if SAVING:
-        torch.save([model.state_dict(), model.configs, epoch], SAVE_PATH)
+        print(f"Train loss (average): {total_loss/EPOCH_SIZE}")
+        
+        if save_path != None:
+            save(model, epoch, save_path)
+
+train(model, SAVE_PATH)
