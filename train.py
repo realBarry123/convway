@@ -49,39 +49,45 @@ mse_loss = torch.nn.MSELoss()
 def save(model: torch.nn.Module, epoch: int, save_path: str):
     torch.save([model.state_dict(), model.configs, epoch], save_path)
 
-def train(model: torch.nn.Module, save_path: str = None, start_epoch: int = 0):
+def train_epoch(model: torch.nn.Module, epoch: int = 0):
+    model.train()
 
-    for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
-        model.train()
+    total_loss = 0
 
-        total_loss = 0
+    states = utils.spacetime_block(steps=SIM_STEPS, factor=SCALE, height=H, width=W, batch_size=B)
+    # print(f"Created spacetime block: {states.shape}")
+    
+    EPOCH_SIZE = states.shape[0] - (SCALE + 1) + 1
+    # print(f"Training for {EPOCH_SIZE} steps...")
 
-        states = utils.spacetime_block(steps=SIM_STEPS, factor=SCALE, height=H, width=W, batch_size=B)
-        # print(f"Created spacetime block: {states.shape}")
+    for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
+        x = states[step: step + SCALE].permute(1, 0, 2, 3)
+        target = states[step + SCALE]
+        y = model(x).squeeze(1)
+        loss = mse_loss(y, target)
+        # residual_loss = torch.mean(abs(y - x))
         
-        EPOCH_SIZE = states.shape[0] - (SCALE + 1) + 1
-        # print(f"Training for {EPOCH_SIZE} steps...")
+        if DO_WANDB: 
+            wandb_run.log({"loss": loss.item()})
 
-        for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
-            x = states[step: step + SCALE].permute(1, 0, 2, 3)
-            target = states[step + SCALE]
-            y = model(x).squeeze(1)
-            loss = mse_loss(y, target)
-            # residual_loss = torch.mean(abs(y - x))
-            
-            if DO_WANDB: 
-                wandb_run.log({"loss": loss.item()})
-
-            total_loss += loss.item()
-            
-            # The holy trinity
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+        total_loss += loss.item()
         
-        print(f"Train loss (average): {total_loss/EPOCH_SIZE}")
-        
-        if save_path != None:
-            save(model, epoch, save_path)
+        # The holy trinity
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+    
+    print(f"Train loss (average): {total_loss/EPOCH_SIZE}")
 
-train(model, SAVE_PATH)
+def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
+    model.eval()
+    with torch.no_grad:
+        pass
+    # TODO
+    
+
+
+for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
+    train_epoch(model, epoch)
+    valid_epoch(model, epoch)
+    save(model, epoch, SAVE_PATH)
