@@ -9,7 +9,7 @@ clock = pygame.time.Clock()
 running = True
 i = 0
 
-SIM_STEPS = 32
+SIM_STEPS = 256
 
 block = spacetime_block(steps=SIM_STEPS, factor=4, height=512, width=512, batch_size=1)
 
@@ -22,13 +22,13 @@ while running and i <= SIM_STEPS * 4:
             running = False
 
     screen.fill("black")
-    draw_matrix(block[i][0].tolist(), screen, 5)
+    draw_matrix(block[0][i].tolist(), screen, 5)
 
     text_surface = my_font.render(str(i/4), False, (255, 255, 255))
     screen.blit(text_surface, (0, 0))
 
     pygame.display.flip()
     i = i+1
-    clock.tick(10)
+    clock.tick(20)
 
 pygame.quit()

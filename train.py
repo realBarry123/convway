@@ -56,11 +56,12 @@ def train_epoch(model: torch.nn.Module, epoch: int = 0):
 
     states = utils.spacetime_block(steps=SIM_STEPS, factor=SCALE, height=H, width=W, batch_size=B)
     # print(f"Created spacetime block: {states.shape}")
-    
-    EPOCH_SIZE = states.shape[0] - (SCALE + 1) + 1
     # print(f"Training for {EPOCH_SIZE} steps...")
 
-    for step in tqdm(range(EPOCH_SIZE), desc=f"E{epoch} Train"):
+    for step in tqdm(range(SCALE * SIM_STEPS), desc=f"E{epoch} Train"):
+        # TODO (in no particular order, perhaps all at once):
+        # 1. Add batch support (batch size 2)
+        # 2. Add data loading
         x = states[step: step + SCALE].permute(1, 0, 2, 3)
         target = states[step + SCALE]
         y = model(x).squeeze(1)
@@ -77,13 +78,13 @@ def train_epoch(model: torch.nn.Module, epoch: int = 0):
         loss.backward()
         optimizer.step()
     
-    print(f"Train loss (average): {total_loss/EPOCH_SIZE}")
+    print(f"Train loss (average): {total_loss / (SCALE * SIM_STEPS)}")
 
 def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
     model.eval()
     with torch.no_grad:
         pass
-    # TODO
+        # TODO
     
 
 
