@@ -5,9 +5,9 @@ from tqdm import tqdm
 from lifegame import update_game
 
 # Upscale spatial dimensions in a blurry way
-def upscale(tensor, factor):
+def upscale(tensor, time_factor, space_factor):
     tensor = tensor.unsqueeze(1)
-    tensor = F.interpolate(tensor, scale_factor=factor, mode='trilinear')
+    tensor = F.interpolate(tensor, scale_factor=(time_factor, space_factor, space_factor), mode='trilinear')
     tensor = tensor.squeeze(1)
     return tensor
 
@@ -16,10 +16,18 @@ def downscale(tensor, factor):
     avg_pool = torch.nn.AvgPool2d(kernel_size=factor)
     return avg_pool(tensor)
 
-def spacetime_block(steps, factor, height, width, batch_size=1):
+def trimmed_spacetime_block(steps, factor, height, width, batch_size=1):
+    out = spacetime_block(steps, factor, height, width, batch_size, time_factor=factor+1)
+    mask = torch.arange(out.shape[1]) % factor != 0
+    out = out[:, mask]
+    return out
+
+def spacetime_block(steps, factor, height, width, batch_size=1, time_factor=None):
     # assert batch_size == 1, "batch size not implemented for any number other than 1"
     if height % factor != 0 or width % factor != 0:
         raise ValueError("height and width dimensions must be divisible by factor")
+    if time_factor == None: 
+        time_factor = factor
     probability = random.triangular(0, 0.6, 0.3)
 
     # Generate initial state
@@ -37,7 +45,7 @@ def spacetime_block(steps, factor, height, width, batch_size=1):
             new_state[i][0] = update_game(states[i][t])
         states = torch.cat((states, new_state), dim=1)
 
-    states = upscale(states, factor)
+    states = upscale(states, time_factor, factor)
     # states = states.permute(1, 0, 2, 3) # spacetime block (B=1, (steps+T+1) * 4 , H, W)
     return states
 
