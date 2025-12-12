@@ -13,7 +13,7 @@ W = 512  # training width
 SAVE_PATH = "models/te.pt"
 
 NUM_EPOCHS = 1
-SIM_STEPS = 2  # how many steps to simulate per epoch
+SIM_STEPS = 32  # how many steps to simulate per epoch
 LR = 0.001
 DEVICE = "cpu"
 
@@ -32,7 +32,6 @@ if DO_WANDB:
         resume=True
     )
 
-
 start_epoch = 0
 
 try: 
@@ -46,25 +45,22 @@ except FileNotFoundError:
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LR, weight_decay=0.01)
 mse_loss = torch.nn.MSELoss()
 
+
 def save(model: torch.nn.Module, epoch: int, save_path: str):
     torch.save([model.state_dict(), model.configs, epoch], save_path)
+
 
 def train_epoch(model: torch.nn.Module, epoch: int = 0):
     model.train()
 
     total_loss = 0
 
-    # states = utils.spacetime_block(steps=SIM_STEPS, factor=SCALE, height=H, width=W, batch_size=B)
     states = torch.load(f"data/train/{random.randint(0, 7)}.pt")
-    print("states.shape: " + str(states.shape))
-    
-    # print(f"Created spacetime block: {states.shape}")
-    # print(f"Training for {EPOCH_SIZE} steps...")
 
     for step in tqdm(range(SCALE * SIM_STEPS), desc=f"E{epoch} Train"):
         x = states[:, step: step + SCALE]
-        target = states[:, step + SCALE]
-        y = model(x).squeeze(1)
+        target = states[:, step + SCALE: step + SCALE + 1]
+        y = model(x)
         loss = mse_loss(y, target)
         
         if DO_WANDB: 
@@ -79,22 +75,21 @@ def train_epoch(model: torch.nn.Module, epoch: int = 0):
     
     print(f"Train loss (average): {total_loss / (SCALE * SIM_STEPS)}")
 
+
 def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
     model.eval()
     with torch.no_grad():
         total_loss = 0
         states = torch.load("data/valid/0.pt")
-        for step in tqdm(range(SCALE * SIM_STEPS), desc=f"E{epoch} Train"):
+        for step in tqdm(range(SCALE * SIM_STEPS), desc=f"E{epoch} Valid"):
 
             x = states[:, step: step + SCALE]
-            target = states[:, step + SCALE]
-            y = model(x).squeeze(1)
+            target = states[:, step + SCALE: step + SCALE + 1]
+            y = model(x)
             loss = mse_loss(y, target)
 
             total_loss += loss.item()
         print(f"Valid loss (average): {total_loss / (SCALE * SIM_STEPS)}")
-        
-    
 
 
 for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
