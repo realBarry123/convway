@@ -7,7 +7,9 @@ from lifegame import update_game
 # Upscale spatial dimensions in a blurry way
 def upscale(tensor, time_factor, space_factor):
     tensor = tensor.unsqueeze(1)
-    tensor = F.interpolate(tensor, scale_factor=(time_factor, space_factor, space_factor), mode='trilinear')
+    print(tensor.shape)
+    tensor = F.interpolate(tensor, scale_factor=(time_factor, space_factor, space_factor), mode='trilinear', align_corners=False)
+    print(tensor.shape)
     tensor = tensor.squeeze(1)
     return tensor
 
@@ -40,9 +42,8 @@ def spacetime_block(steps, factor, height, width, batch_size=1, time_factor=None
     # (B, 1, H/4, W/4)
 
     for t in tqdm(range(steps), desc=f"Generating Data"): 
-        states[:, t + 1] = states[:, t]
         for b in range(batch_size):
-            states[b][t + 1] = update_game(states[b][t])
+            states[b][t+1] = update_game(states[b][t])
 
     if time_factor == None: 
         time_factor = factor
@@ -50,4 +51,6 @@ def spacetime_block(steps, factor, height, width, batch_size=1, time_factor=None
     # states = states.permute(1, 0, 2, 3) # spacetime block (B=1, (steps+T+1) * 4 , H, W)
     return states
 
-print(spacetime_block(8, 4, 128, 128, batch_size=2).shape)
+test_block = spacetime_block(8, 4, 128, 128, batch_size=2, time_factor=7)
+if torch.equal(test_block[0][0], test_block[0][1]):
+    print("test_block.shape")
