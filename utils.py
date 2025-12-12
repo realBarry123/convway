@@ -51,6 +51,8 @@ def spacetime_block(steps, factor, height, width, batch_size=1, time_factor=None
     # states = states.permute(1, 0, 2, 3) # spacetime block (B=1, (steps+T+1) * 4 , H, W)
     return states
 
+'''
 test_block = spacetime_block(8, 4, 128, 128, batch_size=2, time_factor=7)
 if torch.equal(test_block[0][0], test_block[0][1]):
     print("test_block.shape")
+    '''
