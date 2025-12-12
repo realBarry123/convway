@@ -38,7 +38,7 @@ def play_game(model, cell_size=10):
     paused = True
 
     seed_state = torch.randint(0, 2, (1, 1, int(512/4), int(512/4))).float() #  (B=1, T=1, H, W)
-    state = utils.upscale(seed_state, 4)  # (B=1, T=4, H, W)
+    state = utils.upscale(seed_state, 4, 4)  # (B=1, T=4, H, W)
 
     while running:
         for event in pygame.event.get():
@@ -66,7 +66,7 @@ def play_game(model, cell_size=10):
 
 if __name__ == "__main__":
     LOAD_PATH = f"models/{input("Enter model name: ")}.pt"
-    state_dict, epoch, configs = torch.load(LOAD_PATH)
+    state_dict, configs, epoch = torch.load(LOAD_PATH)
     model = ConvwayNet(**configs)
     model.load_state_dict(state_dict)
     model.eval()
