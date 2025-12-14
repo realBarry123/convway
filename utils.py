@@ -22,9 +22,6 @@ def trimmed_spacetime_block(steps, factor, height, width, batch_size=1):
     return out
 
 def spacetime_block(steps, height, width, batch_size=1):
-
-    if height % SCALE != 0 or width % SCALE != 0:
-        raise ValueError("height and width dimensions must be divisible by factor")
     
     probability = random.triangular(0.1, 0.6, 0.3)
 
@@ -44,15 +41,16 @@ def spacetime_block(steps, height, width, batch_size=1):
 
     states = upscale(states, SCALE)
 
+    # Trim if output dims not divisible
     if (states.shape[2] > height): 
-        states = states[:, :, :height,:]
-    elif (states.shape[3] > width):
-        states = states[:, :, :height,:]
+        states = states[:, :, :height, :]
+    if (states.shape[3] > width):
+        states = states[:, :, :, :width]
 
     return states
 
 if __name__ == "__main__":
-    test_block = spacetime_block(8, 128, 128, batch_size=2)
+    test_block = spacetime_block(8, 129, 127, batch_size=2)
     print(test_block.shape)
     if torch.equal(test_block[0][0], test_block[0][1]):
         raise ValueError("duplicate timesteps")
