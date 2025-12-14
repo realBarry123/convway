@@ -1,6 +1,7 @@
 from collections.abc import Callable
 import torch
 from torch import nn
+from torchsummary import summary
 from constants import *
 
 B = 32
@@ -71,5 +72,5 @@ class ConvwayNet(torch.nn.Module):
 
 # Test code does not run on import
 if __name__ == "__main__":
-    model = ConvwayNet(squeeze_mode="n", conv_channels=[1, 4, 1], do_relu=True)
-    print(model(torch.zeros((B, SCALE, 69, 420))).shape)
+    model = ConvwayNet(x_smush_mode="last", r_smush_mode="conv", conv_channels=[1, 4, 1], do_relu=True)
+    summary(model, input_size=(SCALE, 69, 420), batch_size=B)

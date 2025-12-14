@@ -2,4 +2,5 @@ matplotlib
 numpy
 pygame
 torch
+torchsummary
 tqdm
