@@ -1,5 +1,4 @@
 import torch, random, math
-import torch.nn.functional as F
 from tqdm import tqdm
 
 from constants import *
@@ -7,7 +6,7 @@ from lifegame import update_game
 
 # Upscale spatial dimensions in a blurry way
 def upscale(tensor, factor):
-    tensor = F.interpolate(tensor, scale_factor=factor, mode='bilinear', align_corners=False)
+    tensor = torch.nn.functional.interpolate(tensor, scale_factor=factor, mode='bilinear', align_corners=False)
     return tensor
 
 # Downscale spatial dimensions by mean pool

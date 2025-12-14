@@ -10,7 +10,7 @@ assert B == 1, "batch size bigger than 1 has not been implemented yet"
 H = 512  # training height
 W = 512  # training width
 
-SAVE_PATH = "models/te.pt"
+SAVE_PATH = "models/test.pt"
 
 NUM_EPOCHS = 1
 SIM_STEPS = 32  # how many steps to simulate per epoch
@@ -40,7 +40,7 @@ try:
     model.load_state_dict(state_dict)
     start_epoch = epoch + 1
 except FileNotFoundError:
-    model = ConvwayNet(x_smush_mode="last", r_smush_mode="mean", conv_channels=(1, 4, 1), do_relu=True).to(DEVICE)
+    model = ConvwayNet(conv_channels=(1, 4, 1), do_relu=True).to(DEVICE)
 
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LR, weight_decay=0.01)
 mse_loss = torch.nn.MSELoss()
@@ -56,12 +56,14 @@ def train_epoch(model: torch.nn.Module, epoch: int = 0):
     total_loss = 0
 
     states = torch.load(f"data/train/{random.randint(0, 7)}.pt")
+    total_steps = states.shape[1]
 
-    for step in tqdm(range(SCALE * SIM_STEPS), desc=f"E{epoch} Train"):
-        x = states[:, step: step + SCALE]
-        target = states[:, step + SCALE: step + SCALE + 1]
-        y = model(x)
-        loss = mse_loss(y, target)
+    for step in tqdm(range(total_steps), desc=f"E{epoch} Train"):
+        x = states[:, step]
+        target = states[:, step + 1]
+        for t in range(SCALE):
+            x = model(x)
+        loss = mse_loss(x, target)
         
         if DO_WANDB: 
             wandb_run.log({"loss": loss.item()})
@@ -73,7 +75,7 @@ def train_epoch(model: torch.nn.Module, epoch: int = 0):
         loss.backward()
         optimizer.step()
     
-    print(f"Train loss (average): {total_loss / (SCALE * SIM_STEPS)}")
+    print(f"Train loss (average): {total_loss / total_steps}")
 
 
 def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
@@ -81,15 +83,18 @@ def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
     with torch.no_grad():
         total_loss = 0
         states = torch.load("data/valid/0.pt")
-        for step in tqdm(range(SCALE * SIM_STEPS), desc=f"E{epoch} Valid"):
+        total_steps = states.shape[1]
 
-            x = states[:, step: step + SCALE]
-            target = states[:, step + SCALE: step + SCALE + 1]
-            y = model(x)
-            loss = mse_loss(y, target)
+        for step in tqdm(range(total_steps), desc=f"E{epoch} Valid"):
+
+            x = states[:, step]
+            target = states[:, step + 1]
+            for t in range(SCALE):
+                x = model(x)
+            loss = mse_loss(x, target)
 
             total_loss += loss.item()
-        print(f"Valid loss (average): {total_loss / (SCALE * SIM_STEPS)}")
+        print(f"Valid loss (average): {total_loss / total_steps}")
 
 
 for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):

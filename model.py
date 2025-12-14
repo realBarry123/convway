@@ -6,7 +6,7 @@ from constants import *
 
 B = 32
 
-def get_conv_stack(channels: list[int], kernel_size, do_relu=True) -> list[Callable]:
+def get_conv_stack(channels: list[int], kernel_size, do_relu=True) -> list[Callable]: 
     layers = []
     for i in range(len(channels) - 1):
         layers.append(nn.Conv2d(
@@ -19,8 +19,8 @@ def get_conv_stack(channels: list[int], kernel_size, do_relu=True) -> list[Calla
 
     return layers
 
-
-class ConvwayNet(torch.nn.Module):
+# TODO: force symmetrical conv kernels
+class ConvwayNet(torch.nn.Module): 
 
     def __init__(self, conv_channels: list[int], do_relu):
         super().__init__()
