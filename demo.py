@@ -1,6 +1,7 @@
 import torch, pygame, numpy
 from model import ConvwayNet
 import utils
+from constants import *
 
 def draw_matrix(matrix, screen, cell_size=10):
     for row in range(len(matrix)):
@@ -37,8 +38,8 @@ def play_game(model, cell_size=10):
     running = True
     paused = True
 
-    seed_state = torch.randint(0, 2, (1, 1, int(512/4), int(512/4))).float() #  (B=1, T=1, H, W)
-    state = utils.upscale(seed_state, 4, 4)  # (B=1, T=4, H, W)
+    state = torch.randint(0, 2, (1, 1, int(512/4), int(512/4))).float() #  (B=1, T=1, H/4, W/4)
+    state = utils.upscale(state, SCALE)  # (B=1, T=1, H, W)
 
     while running:
         for event in pygame.event.get():
@@ -48,16 +49,14 @@ def play_game(model, cell_size=10):
                 if event.key == pygame.K_SPACE:  # user pressed SPACE
                     paused = not paused
                 elif event.key == pygame.K_RIGHT:
-                    y_pred = model(state)
-                    state = torch.cat((state, y_pred), dim=1)[:, -4:, :, :].detach()
+                    state = model(state)
 
         screen.fill("black")
 
-        draw_matrix(state[-1][0].tolist(), screen, cell_size)
+        draw_matrix(state[0][0].tolist(), screen, cell_size)
 
         if not paused:
-            y_pred = model(state)
-            state = torch.cat((state, y_pred), dim=1)[:, -4:, :, :].detach()
+            state = model(state)
         
         pygame.display.flip()
         clock.tick(10)
