@@ -58,17 +58,18 @@ def train_epoch(model: torch.nn.Module, epoch: int = 0):
     states = torch.load(f"data/train/{random.randint(0, 7)}.pt")
     total_steps = states.shape[1]
 
-    for step in tqdm(range(total_steps), desc=f"E{epoch} Train"):
+    for step in tqdm(range(total_steps - 1), desc=f"E{epoch} Train"):
         x = states[:, step]
         target = states[:, step + 1]
+
         for t in range(SCALE):
             x = model(x)
+
         loss = mse_loss(x, target)
+        total_loss += loss.item()
         
         if DO_WANDB: 
             wandb_run.log({"loss": loss.item()})
-
-        total_loss += loss.item()
         
         # The holy trinity
         optimizer.zero_grad()
@@ -85,15 +86,16 @@ def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
         states = torch.load("data/valid/0.pt")
         total_steps = states.shape[1]
 
-        for step in tqdm(range(total_steps), desc=f"E{epoch} Valid"):
-
+        for step in tqdm(range(total_steps - 1), desc=f"E{epoch} Valid"):
             x = states[:, step]
             target = states[:, step + 1]
+
             for t in range(SCALE):
                 x = model(x)
-            loss = mse_loss(x, target)
 
+            loss = mse_loss(x, target)
             total_loss += loss.item()
+
         print(f"Valid loss (average): {total_loss / total_steps}")
 
 
