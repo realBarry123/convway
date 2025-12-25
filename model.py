@@ -4,8 +4,6 @@ from torch import nn
 from torchsummary import summary
 from constants import *
 
-B = 32
-
 def get_conv_stack(channels: list[int], kernel_size, activation=None) -> list[Callable]: 
     layers = []
     for i in range(len(channels) - 1): # each pair of channel sizes
@@ -47,4 +45,4 @@ class ConvwayNet(nn.Module):
 
 if __name__ == "__main__":
     model = ConvwayNet(conv_channels=[1, 4, 1], do_relu=True)
-    summary(model, input_size=(1, 69, 420), batch_size=B)
+    summary(model, input_size=(1, 69, 420), batch_size=32)
