@@ -1,4 +1,4 @@
-import torch, random, time, wandb
+import torch, random, wandb
 from tqdm import tqdm
 from model import ConvwayNet
 from demo import display_matrix
@@ -12,7 +12,7 @@ W = 512  # training width
 
 SAVE_PATH = "models/test.pt"
 
-NUM_EPOCHS = 1
+NUM_EPOCHS = 16
 SIM_STEPS = 32  # how many steps to simulate per epoch
 LR = 0.001
 DEVICE = "cpu"
@@ -84,9 +84,9 @@ def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
     with torch.no_grad():
         total_loss = 0
         states = torch.load("data/valid/0.pt")
-        total_steps = states.shape[1]
+        VALID_STEPS = 32
 
-        for step in tqdm(range(total_steps - 1), desc=f"E{epoch} Valid"):
+        for step in tqdm(range(min(VALID_STEPS, states.shape[1] - 1)), desc=f"E{epoch} Valid"):
             x = states[:, step]
             target = states[:, step + 1]
 
@@ -96,7 +96,7 @@ def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
             loss = mse_loss(x, target)
             total_loss += loss.item()
 
-        print(f"Valid loss (average): {total_loss / total_steps}")
+        print(f"Valid loss (average): {total_loss / min(VALID_STEPS, states.shape[1] - 1)}")
 
 
 for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
