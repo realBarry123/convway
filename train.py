@@ -40,7 +40,7 @@ try:
     model.load_state_dict(state_dict)
     start_epoch = epoch + 1
 except FileNotFoundError:
-    model = ConvwayNet(conv_channels=(1, 4, 1), do_relu=True).to(DEVICE)
+    model = ConvwayNet(conv_channels=(1, 4, 16, 4, 1), activation="relu").to(DEVICE)
 
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LR, weight_decay=0.01)
 mse_loss = torch.nn.MSELoss()

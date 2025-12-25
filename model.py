@@ -6,7 +6,7 @@ from constants import *
 
 B = 32
 
-def get_conv_stack(channels: list[int], kernel_size, do_relu=True) -> list[Callable]: 
+def get_conv_stack(channels: list[int], kernel_size, activation=None) -> list[Callable]: 
     layers = []
     for i in range(len(channels) - 1):
         layers.append(nn.Conv2d(
@@ -15,14 +15,15 @@ def get_conv_stack(channels: list[int], kernel_size, do_relu=True) -> list[Calla
             kernel_size=kernel_size,
             padding="same"
         ))
-        if do_relu: layers.append(nn.LeakyReLU())
+        if activation == "relu": layers.append(nn.LeakyReLU())
+        elif activation == "sin": layers.append(torch.sin)
 
     return layers
 
 # TODO: force symmetrical conv kernels
 class ConvwayNet(torch.nn.Module): 
 
-    def __init__(self, conv_channels: list[int], do_relu):
+    def __init__(self, conv_channels: list[int], activation):
         super().__init__()
 
         assert conv_channels[0] == 1
@@ -30,11 +31,11 @@ class ConvwayNet(torch.nn.Module):
 
         self.configs = {
             "conv_channels": conv_channels,
-            "do_relu": do_relu
+            "activation": activation
         }
 
         # Conv layers
-        self.convs = nn.Sequential(*get_conv_stack(conv_channels, kernel_size=SCALE*3, do_relu=do_relu))
+        self.convs = nn.Sequential(*get_conv_stack(conv_channels, kernel_size=SCALE*3, activation=activation))
 
         # Activations
         self.sigmoid = nn.Sigmoid()
