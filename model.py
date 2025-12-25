@@ -8,7 +8,7 @@ B = 32
 
 def get_conv_stack(channels: list[int], kernel_size, activation=None) -> list[Callable]: 
     layers = []
-    for i in range(len(channels) - 1):
+    for i in range(len(channels) - 1): # each pair of channel sizes
         layers.append(nn.Conv2d(
             in_channels=channels[i], 
             out_channels=channels[i+1], 
@@ -20,8 +20,8 @@ def get_conv_stack(channels: list[int], kernel_size, activation=None) -> list[Ca
 
     return layers
 
-# TODO: force symmetrical conv kernels
-class ConvwayNet(torch.nn.Module): 
+
+class ConvwayNet(nn.Module): 
 
     def __init__(self, conv_channels: list[int], activation):
         super().__init__()
@@ -34,10 +34,7 @@ class ConvwayNet(torch.nn.Module):
             "activation": activation
         }
 
-        # Conv layers
         self.convs = nn.Sequential(*get_conv_stack(conv_channels, kernel_size=SCALE*3, activation=activation))
-
-        # Activations
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor):  # (B, C=1, H, W)
@@ -47,7 +44,7 @@ class ConvwayNet(torch.nn.Module):
         
         return x
 
-# Test code does not run on import
+
 if __name__ == "__main__":
     model = ConvwayNet(conv_channels=[1, 4, 1], do_relu=True)
     summary(model, input_size=(1, 69, 420), batch_size=B)
