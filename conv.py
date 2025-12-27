@@ -14,7 +14,8 @@ class SymConv2d(nn.Module):
         self.padding = padding
         self.doBias = bias
         self.param_width = math.ceil(kernel_size/2)
-        self.params = nn.Parameter(data=torch.randn((self.out_c, self.in_c, (self.param_width**2 + self.param_width)//2)))
+        self.params = nn.Parameter(data=torch.empty((self.out_c, self.in_c, (self.param_width**2 + self.param_width)//2)))
+        nn.init.kaiming_uniform_(self.params, a=0, mode='fan_in', nonlinearity='relu')
 
     def forward(self, x):
         kernel = torch.zeros((self.out_c, self.in_c, self.kernel_size, self.kernel_size))
@@ -26,11 +27,11 @@ class SymConv2d(nn.Module):
 
             kernel[:, :, row, col] = self.params
             row = self.kernel_size-row-1 # paragonal reflection
-
+            
         return F.conv2d(x, kernel, stride=self.stride, padding=self.padding)
 
 
 if __name__ == "__main__":
-    x = torch.full((1, 2, 9, 9), 2.0)
+    x = torch.full((1, 2, 9, 9), 1.0)
     conv = SymConv2d(in_channels=2, out_channels=2, kernel_size=5, padding="same")
     x = conv(x)
