@@ -49,14 +49,14 @@ def play_game(model, cell_size=10):
                 if event.key == pygame.K_SPACE:  # user pressed SPACE
                     paused = not paused
                 elif event.key == pygame.K_RIGHT:
-                    state = model(state)
+                    state, _ = model(state)
 
         screen.fill("black")
 
         draw_matrix(state[0][0].tolist(), screen, cell_size)
 
         if not paused:
-            state = model(state)
+            state, _ = model(state)
         
         pygame.display.flip()
         clock.tick(10)

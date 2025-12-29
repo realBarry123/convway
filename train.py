@@ -10,9 +10,9 @@ assert B == 1, "batch size bigger than 1 has not been implemented yet"
 H = 512  # training height
 W = 512  # training width
 
-SAVE_PATH = "models/test.pt"
+SAVE_PATH = "models/test2.pt"
 
-NUM_EPOCHS = 16
+NUM_EPOCHS = 8
 SIM_STEPS = 32  # how many steps to simulate per epoch
 LR = 0.001
 DEVICE = "cpu"
@@ -58,14 +58,17 @@ def train_epoch(model: torch.nn.Module, epoch: int = 0):
     states = torch.load(f"data/train/{random.randint(0, 7)}.pt")
     total_steps = states.shape[1]
 
-    for step in tqdm(range(total_steps - 1), desc=f"E{epoch} Train"):
+    TRAIN_STEPS = 8
+
+    for step in tqdm(range(min(TRAIN_STEPS, total_steps - 1)), desc=f"E{epoch} Train"):
         x = states[:, step]
         target = states[:, step + 1]
-
+        r_loss = 0
         for t in range(SCALE):
-            x = model(x)
+            x, scaled_r_sum = model(x)
+            r_loss += scaled_r_sum
 
-        loss = mse_loss(x, target)
+        loss = mse_loss(x, target) + r_loss
         total_loss += loss.item()
         
         if DO_WANDB: 
@@ -84,21 +87,22 @@ def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
     with torch.no_grad():
         total_loss = 0
         states = torch.load("data/valid/0.pt")
-        VALID_STEPS = 32
+        VALID_STEPS = 8
 
         for step in tqdm(range(min(VALID_STEPS, states.shape[1] - 1)), desc=f"E{epoch} Valid"):
             x = states[:, step]
             target = states[:, step + 1]
-
+            r_loss = 0
             for t in range(SCALE):
-                x = model(x)
+                x, scaled_r_sum = model(x)
+                r_loss += scaled_r_sum
 
-            loss = mse_loss(x, target)
+            loss = mse_loss(x, target) + r_loss
             total_loss += loss.item()
 
         print(f"Valid loss (average): {total_loss / min(VALID_STEPS, states.shape[1] - 1)}")
 
-
+valid_epoch(model, -1)
 for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
     train_epoch(model, epoch)
     valid_epoch(model, epoch)

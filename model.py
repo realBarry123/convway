@@ -33,7 +33,7 @@ class ConvwayNet(nn.Module):
             "activation": activation
         }
 
-        self.convs = nn.Sequential(*get_conv_stack(conv_channels, kernel_size=SCALE*3, activation=activation))
+        self.convs = nn.Sequential(*get_conv_stack(conv_channels, kernel_size=SCALE*5, activation=activation))
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x: torch.Tensor):  # (B, C=1, H, W)
@@ -41,7 +41,7 @@ class ConvwayNet(nn.Module):
         r = self.convs(x)
         x = self.sigmoid(x + r)
         
-        return x
+        return x, (torch.sum(r) * 1e-7) ** 2
 
 if __name__ == "__main__":
     model = ConvwayNet(conv_channels=[1, 4, 1], do_relu=True)
