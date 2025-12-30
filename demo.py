@@ -38,8 +38,9 @@ def play_game(model, cell_size=10):
     running = True
     paused = True
 
-    state = torch.randint(0, 2, (1, 1, int(512/4), int(512/4))).float() #  (B=1, T=1, H/4, W/4)
-    state = utils.upscale(state, SCALE)  # (B=1, T=1, H, W)
+    #state = torch.randint(0, 2, (1, 1, int(512/4), int(512/4))).float() #  (B=1, T=1, H/4, W/4)
+    # state = utils.upscale(state, SCALE)  # (B=1, T=1, H, W)
+    state = torch.load(f"data/train/0.pt")[:, :1]
 
     while running:
         for event in pygame.event.get():

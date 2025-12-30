@@ -1,0 +1,14 @@
+2025/12/29
+    Added a term in the loss
+
+    Model with both SymConv2d and nn.Conv2d seem to hit a wall in train loss at around 0.0065
+    - SymConv2d converges immediately
+    - nn.Conv2d converges at around epoch 3
+
+    Valid loss consistently very high: around 0.1
+    nn.Conv2d model actually started at 0.2 and converged to 0.1
+
+    SymConv2d and other built-in cons functions take BCTHW
+    Dataset is BTHW
+
+    TODO (no particular order): retrace steps, examine previous versions
