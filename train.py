@@ -12,11 +12,11 @@ H = 1024  # training height
 W = 1024  # training width
 BETA = 0.1
 
-SAVE_PATH = "models/model_1.pt"
+SAVE_PATH = "models/model_ord2.pt"
 
-NUM_EPOCHS = 10
+NUM_EPOCHS = 64
 EPOCH_SIZE = 1  # size of epoch
-LR = 0.001
+LR = 0.0001
 DEVICE = "cpu"
 
 start_epoch = 0
@@ -32,6 +32,9 @@ except FileNotFoundError:
 
 optimizer = torch.optim.Adam(params=model.parameters(), lr=LR, weight_decay=0.01)
 mse_loss = torch.nn.MSELoss()
+
+best_loss = 1
+patience = 3
 
 for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
     model.train()
@@ -74,6 +77,18 @@ for epoch in range(start_epoch, start_epoch + NUM_EPOCHS):
         loss.backward()
         optimizer.step()
     
-    print(f"Train loss (average): {total_loss/EPOCH_SIZE}")
+    avg_loss = total_loss/EPOCH_SIZE
+
+    print(f"Train loss (average): {avg_loss}")
+    if avg_loss > best_loss:
+        patience -= 1
+    else: 
+        best_loss = avg_loss
+        if patience < 3: 
+            patience += 1
+
+    if patience == 0: 
+        print("Stopping train loop...")
+        break
     
     torch.save([model.state_dict(), epoch], SAVE_PATH)
