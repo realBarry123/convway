@@ -10,12 +10,11 @@ assert B == 1, "batch size bigger than 1 has not been implemented yet"
 H = 512  # training height
 W = 512  # training width
 
-SAVE_PATH = "models/test2.pt"
+SAVE_PATH = "models/mps_test.pt"
 
-NUM_EPOCHS = 8
+NUM_EPOCHS = 16
 SIM_STEPS = 32  # how many steps to simulate per epoch
 LR = 0.001
-DEVICE = "cpu"
 
 SAVING = False
 DO_WANDB = False
@@ -55,7 +54,7 @@ def train_epoch(model: torch.nn.Module, epoch: int = 0):
 
     total_loss = 0
 
-    states = torch.load(f"data/train/{random.randint(0, 7)}.pt")
+    states = torch.load(f"data/train/{random.randint(0, 3)}.pt").to(DEVICE)
     total_steps = states.shape[1]
 
     TRAIN_STEPS = 8
@@ -68,7 +67,7 @@ def train_epoch(model: torch.nn.Module, epoch: int = 0):
             x, scaled_r_sum = model(x)
             r_loss += scaled_r_sum
 
-        loss = mse_loss(x, target) + r_loss
+        loss = mse_loss(x.to(DEVICE), target) + r_loss
         total_loss += loss.item()
         
         if DO_WANDB: 
@@ -86,7 +85,7 @@ def valid_epoch(model: torch.nn.Module, epoch: int = 0) -> int:
     model.eval()
     with torch.no_grad():
         total_loss = 0
-        states = torch.load("data/valid/0.pt")
+        states = torch.load("data/valid/0.pt").to(DEVICE)
         VALID_STEPS = 8
 
         for step in tqdm(range(min(VALID_STEPS, states.shape[1] - 1)), desc=f"E{epoch} Valid"):

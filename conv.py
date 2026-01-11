@@ -1,6 +1,7 @@
 import torch, math
 from torch import nn
 import torch.nn.functional as F
+from constants import *
 
 
 class SymConv2d(nn.Module):
@@ -14,7 +15,9 @@ class SymConv2d(nn.Module):
         self.padding = padding
         self.doBias = bias
         self.param_width = math.ceil(kernel_size/2)
-        self.params = nn.Parameter(data=torch.empty((self.out_c, self.in_c, (self.param_width**2 + self.param_width)//2)))
+        self.params = nn.Parameter(
+            data=torch.empty((self.out_c, self.in_c, (self.param_width**2 + self.param_width)//2))
+        ).to(DEVICE)
         nn.init.kaiming_uniform_(self.params, a=0, mode='fan_in', nonlinearity='relu')
 
     def forward(self, x):

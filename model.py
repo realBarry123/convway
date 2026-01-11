@@ -8,7 +8,7 @@ from conv import SymConv2d
 def get_conv_stack(channels: list[int], kernel_size, activation=None) -> list[Callable]: 
     layers = []
     for i in range(len(channels) - 1): # each pair of channel sizes
-        layers.append(SymConv2d(
+        layers.append(nn.Conv2d(
             in_channels=channels[i], 
             out_channels=channels[i+1], 
             kernel_size=kernel_size,
